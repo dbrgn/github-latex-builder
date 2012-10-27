@@ -89,17 +89,22 @@ class Builder(object):
 
     def _clone(self):
         """Clone repository to build folder."""
+        if os.path.isdir(self.clone_dir) and os.listdir(self.clone_dir):
+            raise RuntimeError('Clone directory is not empty!')
         if not subprocess.call(['git', 'clone', self.clone_url, self.clone_dir]) == 0:
-            raise RuntimeError('git clone failed')
+            raise RuntimeError('Git clone failed')
         with chdir(self.clone_dir):
             if os.getcwd() != self.clone_dir:
                 raise RuntimeError('Changing into build directory failed.')
             if not subprocess.call(['git', 'checkout', self.commit]) == 0:
-                raise RuntimeError('git checkout failed')
+                raise RuntimeError('Git checkout failed')
 
     def _build(self):
         """Build specified commit."""
-        raise NotImplementedError
+        if os.path.isfile(os.path.join(self.clone_dir, 'Makefile')):
+            with chdir(self.clone_dir):
+                if not subprocess.call(['make']):
+                    raise RuntimeError('make failed')
 
     def _copy(self):
         """Copy PDF files to output directory."""
@@ -107,7 +112,13 @@ class Builder(object):
 
     def _cleanup(self):
         """Do cleanups, like removing lockfiles."""
-        raise NotImplementedError
+        try:
+            lockfile_name = os.path.join(self.repo_build_dir, '.' + self.commit)
+            os.remove(lockfile_name)
+        except OSError as e:
+            if e.errno == errno.ENOENT:
+                raise RuntimeError('Lockfile not found. Someone must have removed it manually.')
+            raise
 
     def run(self):
         """Prepare and build specified commit."""
