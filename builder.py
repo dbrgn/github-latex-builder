@@ -4,6 +4,7 @@ import errno
 import conf
 import contextlib
 import subprocess
+import shutil
 
 
 @contextlib.contextmanager  
@@ -107,8 +108,22 @@ class Builder(object):
                     raise RuntimeError('make failed')
 
     def _copy(self):
-        """Copy PDF files to output directory."""
-        raise NotImplementedError
+        """Clean PDF directory, copy over new PDF files."""
+
+        for f in os.listdir(self.repo_pdf_dir):
+            os.remove(os.path.join(self.repo_pdf_dir, f))
+
+        for dirpath, dirs, files in os.walk(self.clone_dir, topdown=True):
+            if '.git' in dirs:
+                dirs.remove('.git')  # Don't recurse into .git directory
+            pdf_files = [f for f in files if f.endswith('.pdf')]
+            for pdf in pdf_files:
+                src = os.path.join(dirpath, pdf)
+                dst = os.path.join(self.repo_pdf_dir, pdf)
+                if os.path.isfile(dst):
+                    dst = dst[:-3] + '2.pdf'
+                shutil.copyfile(src, dst)
+                print 'Copied file %s to pdf directory.' % pdf
 
     def _cleanup(self):
         """Do cleanups, like removing lockfiles."""
