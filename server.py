@@ -47,4 +47,4 @@ if __name__ == '__main__':
         port = int(args['-p'])
     except ValueError:
         raise ValueError('Invalid port number: %s.' % args['-p'])
-    run(host='localhost', port=port, debug=True)
+    run(host=args['-i'], port=port, debug=True)
