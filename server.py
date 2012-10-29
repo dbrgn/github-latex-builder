@@ -29,7 +29,7 @@ def home():
 def store():
     """Webhook for notifications about a new commit on Github."""
     try:
-        data = json.load(request.body)
+        data = json.loads(request.POST['payload'])
     except ValueError:
         abort(400, 'Bad request: Could not decode request body')
     name = data['repository']['name']
