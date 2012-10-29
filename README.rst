@@ -7,7 +7,13 @@ the LaTeX repository on each new commit.
 Setup Server
 ------------
 
-Prerequisites: A LaTeX compiler, Python 2, pip
+Prerequisites:
+
+- A LaTeX compiler (e.g. texlive, installing `texlive-full` is recommended)
+- GNU Make
+- latexmk (usually comes with texlive)
+- Python 2
+- pip
 
     pip install -r requirements.txt
     python server.py
