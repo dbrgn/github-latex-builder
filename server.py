@@ -15,6 +15,7 @@ Options:
 __version__ = '0.0.1'
 from bottle import get, post, run, redirect, request, abort, HTTPResponse
 from docopt import docopt
+import multiprocessing
 import json
 import builder
 
@@ -34,7 +35,10 @@ def store():
     name = data['repository']['name']
     repo_url = data['repository']['url']
     commit = data['after']
-    builder.build(name, repo_url, commit)
+    b = builder.Builder(name, repo_url, commit)
+    p = multiprocessing.Process(target=b.run)
+    p.start()
+    raise HTTPResponse('Started build process in background.\n', 202)
 
 
 if __name__ == '__main__':
