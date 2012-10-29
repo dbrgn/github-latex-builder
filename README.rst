@@ -15,12 +15,14 @@ Prerequisites:
 - Python 2
 - pip
 
+::
+
     pip install -r requirements.txt
     python server.py
 
 The webhook URL is now running at http://localhost:9393/webhook
 
-Other commandline options:
+Other commandline options::
 
     Usage:
         server.py [-i HOST] [-p PORT]
