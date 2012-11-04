@@ -47,6 +47,18 @@ Setup Repository
 
 Add the publicly accessible Webhook URL to `https://github.com/<user>/<repo>/admin/hooks`.
 
+Access Codes
+------------
+
+If you want to use access codes (highly recommended) to authorize webhook POSTs,
+create a file called `access_codes` and add valid codes to it (one per line).
+The use of UUIDs as access codes is recommended (see http://www.guidgenerator.com/).
+
+In order for a callback URL to be accepted by the server, you need to add a
+valid access code to the `access_code` GET parameter::
+
+    http://path-to-server.tld/webhook?access_code=8e4261d4-e3f8-441d-a86d-09748b8345d5
+
 License
 -------
 

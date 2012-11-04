@@ -15,9 +15,25 @@ Options:
 __version__ = '0.0.1'
 from bottle import get, post, run, redirect, request, abort, HTTPResponse
 from docopt import docopt
+import os
 import multiprocessing
 import json
 import builder
+
+
+def validate_access_code():
+    """If an access_code is provided, check whether it is valid. Return if yes, abort if not."""
+    path = os.path.join(os.getcwd(), 'access_codes')
+    access_code = request.GET.get('access_code')
+    if access_code:
+        if os.path.isfile(path):
+            access_codes = [c.strip('\n') for c in open(path, 'r').readlines()]
+            if access_code in filter(None, access_codes):
+                return
+            abort(401, 'Unauthorized: Invalid access code.')
+        abort(400, 'Bad request: Access code provided, but no access_code file present.')
+    if os.path.isfile(path):
+        abort(401, 'Unauthorized: Please provide an access code.')
 
 
 @get('/')
@@ -28,10 +44,11 @@ def home():
 @post('/webhook')
 def store():
     """Webhook for notifications about a new commit on Github."""
+    validate_access_code()
     try:
         data = json.loads(request.POST['payload'])
     except ValueError:
-        abort(400, 'Bad request: Could not decode request body')
+        abort(400, 'Bad request: Could not decode request body.')
     name = data['repository']['name']
     repo_url = data['repository']['url']
     commit = data['after']
