@@ -27,9 +27,10 @@ def validate_access_code():
     access_code = request.GET.get('access_code')
     if access_code:
         if os.path.isfile(path):
-            access_codes = [c.strip('\n') for c in open(path, 'r').readlines()]
-            if access_code in filter(None, access_codes):
-                return
+            for line in open(path, 'r').xreadlines():
+                code = line.split('#', 1)[0].strip('\n ')
+                if code == access_code:
+                    return
             abort(401, 'Unauthorized: Invalid access code.')
         abort(400, 'Bad request: Access code provided, but no access_code file present.')
     if os.path.isfile(path):

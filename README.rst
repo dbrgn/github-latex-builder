@@ -54,6 +54,8 @@ If you want to use access codes (highly recommended) to authorize webhook POSTs,
 create a file called `access_codes` and add valid codes to it (one per line).
 The use of UUIDs as access codes is recommended (see http://www.guidgenerator.com/).
 
+In case you want to comment access codes, you can do that following a hash (#) character.
+
 In order for a callback URL to be accepted by the server, you need to add a
 valid access code to the `access_code` GET parameter::
 
