@@ -2,4 +2,5 @@
 *.pyc
 /build/
 /pdf/
+/VIRTUAL/
 access_codes

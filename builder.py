@@ -5,6 +5,15 @@ import conf
 import contextlib
 import subprocess
 import shutil
+import stat as s
+
+
+PERM_666 = ( s.S_IRUSR | s.S_IWUSR
+           | s.S_IRGRP | s.S_IWGRP
+           | s.S_IROTH | s.S_IWOTH )
+PERM_777 = ( s.S_IRUSR | s.S_IWUSR | s.S_IXUSR
+           | s.S_IRGRP | s.S_IWGRP | s.S_IXGRP
+           | s.S_IROTH | s.S_IWOTH | s.S_IXOTH )
 
 
 @contextlib.contextmanager  
@@ -45,7 +54,7 @@ class Builder(object):
         self.commit = commit
         if repo_url.startswith('https://'):
             self.clone_url = repo_url + '.git'
-        elif repo_url.startswith('git://'):
+        elif repo_url.startswith('git://') or repo_url.endswith('.git'):
             self.clone_url = repo_url
         else:
             raise ValueError('Invalid repo_url')
@@ -126,7 +135,7 @@ class Builder(object):
                 print 'Copied file %s to pdf directory.' % pdf
 
     def _cleanup(self):
-        """Do cleanups, like removing lockfiles."""
+        """Do cleanups, like removing lockfiles and fixing permissions."""
         try:
             lockfile_name = os.path.join(self.repo_build_dir, '.' + self.commit)
             os.remove(lockfile_name)
@@ -134,6 +143,13 @@ class Builder(object):
             if e.errno == errno.ENOENT:
                 raise RuntimeError('Lockfile not found. Someone must have removed it manually.')
             raise
+        for dirpath, dirs, files in os.walk(self.pdf_dir, topdown=True):
+            for dir in dirs:
+                path = os.path.join(dirpath, dir)
+                os.chmod(path, PERM_777)
+            for file in files:
+                path = os.path.join(dirpath, file)
+                os.chmod(path, PERM_666)
 
     def run(self):
         """Prepare and build specified commit."""
