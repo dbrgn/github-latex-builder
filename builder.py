@@ -101,19 +101,19 @@ class Builder(object):
         """Clone repository to build folder."""
         if os.path.isdir(self.clone_dir) and os.listdir(self.clone_dir):
             raise RuntimeError('Clone directory is not empty!')
-        if not subprocess.call(['git', 'clone', self.clone_url, self.clone_dir]) == 0:
+        if subprocess.call(['git', 'clone', self.clone_url, self.clone_dir]) != 0:
             raise RuntimeError('Git clone failed')
         with chdir(self.clone_dir):
             if os.getcwd() != self.clone_dir:
                 raise RuntimeError('Changing into build directory failed.')
-            if not subprocess.call(['git', 'checkout', self.commit]) == 0:
+            if subprocess.call(['git', 'checkout', self.commit]) != 0:
                 raise RuntimeError('Git checkout failed')
 
     def _build(self):
         """Build specified commit."""
         if os.path.isfile(os.path.join(self.clone_dir, 'Makefile')):
             with chdir(self.clone_dir):
-                if not subprocess.call(['make']):
+                if subprocess.call(['make']) != 0:
                     raise RuntimeError('make failed')
 
     def _copy(self):
