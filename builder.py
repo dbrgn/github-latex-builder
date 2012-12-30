@@ -76,6 +76,7 @@ class Builder(object):
         self.repo_build_dir = os.path.join(self.build_dir, self.name)
         self.repo_pdf_dir = os.path.join(self.pdf_dir, self.name)
         self.clone_dir = os.path.join(self.repo_build_dir, self.commit)
+        self.lockfile_name = os.path.join(self.repo_build_dir, '.' + self.commit)
 
         safely_create_directory(self.build_dir)
         safely_create_directory(self.pdf_dir)
@@ -85,13 +86,12 @@ class Builder(object):
         # Create lockfile
 
         try:
-            lockfile_name = os.path.join(self.repo_build_dir, '.' + self.commit)
-            fd = os.open(lockfile_name, os.O_EXCL | os.O_CREAT, 0664)
+            fd = os.open(self.lockfile_name, os.O_EXCL | os.O_CREAT, 0664)
         except OSError as e:
             if e.errno == errno.EEXIST:
                 raise RuntimeError('Lockfile exists. If you\'re sure that no '
                         'other process is currently building that project, you '
-                        'can remove "%s" manually.' % lockfile_name)
+                        'can remove "%s" manually.' % self.lockfile_name)
             raise
         else:
             os.close(fd)
@@ -100,7 +100,7 @@ class Builder(object):
     def _clone(self):
         """Clone repository to build folder."""
         if os.path.isdir(self.clone_dir) and os.listdir(self.clone_dir):
-            raise RuntimeError('Clone directory is not empty!')
+            shutil.rmtree(self.clone_dir)
         if subprocess.call(['git', 'clone', self.clone_url, self.clone_dir]) != 0:
             raise RuntimeError('Git clone failed')
         with chdir(self.clone_dir):
@@ -137,8 +137,7 @@ class Builder(object):
     def _cleanup(self):
         """Do cleanups, like removing lockfiles and fixing permissions."""
         try:
-            lockfile_name = os.path.join(self.repo_build_dir, '.' + self.commit)
-            os.remove(lockfile_name)
+            os.remove(self.lockfile_name)
         except OSError as e:
             if e.errno == errno.ENOENT:
                 raise RuntimeError('Lockfile not found. Someone must have removed it manually.')
