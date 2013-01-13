@@ -106,6 +106,10 @@ class Builder(object):
         with chdir(self.clone_dir):
             if os.getcwd() != self.clone_dir:
                 raise RuntimeError('Changing into build directory failed.')
+            if subprocess.call(['git', 'submodule', 'init']) != 0:
+                raise RuntimeError('Git submodule init failed')
+            if subprocess.call(['git', 'submodule', 'update']) != 0:
+                raise RuntimeError('Git submodule update failed')
             if subprocess.call(['git', 'checkout', self.commit]) != 0:
                 raise RuntimeError('Git checkout failed')
 
