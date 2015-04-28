@@ -1,0 +1,21 @@
+[Unit]
+Description=Github LaTeX builder
+After=network.target
+
+[Service]
+Type=simple
+User=latexbuilder
+Group=latexbuilder
+ExecStart=/home/latexbuilder/github-latex-builder/VIRTUAL/bin/python server.py -p 9494
+WorkingDirectory=/home/latexbuilder/github-latex-builder
+ReadOnlyDirectories=/
+ReadWriteDirectories=/home/latexbuilder/github-latex-builder/build /home/latexbuilder/github-latex-builder/pdf
+NoNewPrivileges=true
+ProtectSystem=full
+TimeoutStartSec=2
+TimeoutStopSec=5
+Restart=on-failure
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
